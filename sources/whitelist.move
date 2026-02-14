@@ -1,13 +1,3 @@
-/*
- * Copyright (c) 2025 Bima Kharisma Wicaksana
- * GitHub: https://github.com/bimakw
- *
- * Licensed under MIT License with Attribution Requirement.
- * See LICENSE file for details.
- */
-
-/// A whitelist module demonstrating access control patterns in Move.
-/// Uses capability pattern for admin access.
 module sui_move_examples::whitelist {
     use sui::object::{Self, UID};
     use sui::tx_context::{Self, TxContext};
@@ -15,24 +5,20 @@ module sui_move_examples::whitelist {
     use sui::table::{Self, Table};
     use sui::event;
 
-    /// Error codes
     const ENotAdmin: u64 = 0;
     const EAlreadyWhitelisted: u64 = 1;
     const ENotWhitelisted: u64 = 2;
 
-    /// Admin capability - only admin can modify whitelist
     public struct AdminCap has key, store {
         id: UID,
     }
 
-    /// Whitelist registry
     public struct Whitelist has key {
         id: UID,
         addresses: Table<address, bool>,
         count: u64,
     }
 
-    /// Events
     public struct AddressAdded has copy, drop {
         address: address,
         added_by: address,
@@ -43,7 +29,6 @@ module sui_move_examples::whitelist {
         removed_by: address,
     }
 
-    /// Initialize whitelist with admin capability
     fun init(ctx: &mut TxContext) {
         let admin = AdminCap {
             id: object::new(ctx),
@@ -59,7 +44,6 @@ module sui_move_examples::whitelist {
         transfer::share_object(whitelist);
     }
 
-    /// Add address to whitelist (admin only)
     public entry fun add_address(
         _admin: &AdminCap,
         whitelist: &mut Whitelist,
@@ -77,7 +61,6 @@ module sui_move_examples::whitelist {
         });
     }
 
-    /// Remove address from whitelist (admin only)
     public entry fun remove_address(
         _admin: &AdminCap,
         whitelist: &mut Whitelist,
@@ -95,17 +78,14 @@ module sui_move_examples::whitelist {
         });
     }
 
-    /// Check if address is whitelisted
     public fun is_whitelisted(whitelist: &Whitelist, addr: address): bool {
         table::contains(&whitelist.addresses, addr)
     }
 
-    /// Get whitelist count
     public fun count(whitelist: &Whitelist): u64 {
         whitelist.count
     }
 
-    /// Transfer admin capability
     public entry fun transfer_admin(admin: AdminCap, recipient: address) {
         transfer::transfer(admin, recipient);
     }
